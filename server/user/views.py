@@ -3,8 +3,12 @@ from django.conf import settings
 from django.middleware import csrf
 from rest_framework import exceptions as rest_exceptions, response, decorators as rest_decorators, permissions as rest_permissions
 from rest_framework_simplejwt import tokens, views as jwt_views, serializers as jwt_serializers, exceptions as jwt_exceptions
+from rest_framework import status
+from rest_framework.exceptions import ValidationError
 from user import serializers, models
-
+import requests
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
 
 def get_user_tokens(user):
     refresh = tokens.RefreshToken.for_user(user)
@@ -128,3 +132,21 @@ def user(request):
 
     serializer = serializers.UserSerializer(user)
     return response.Response(serializer.data)
+
+@rest_decorators.api_view(["GET"])
+@rest_decorators.permission_classes([rest_permissions.IsAuthenticated])
+def walletbalance(self, request):
+    wallet_address = request.user.ethereum_wallet_address
+    if not wallet_address:
+        return response.Response({"error": "Ethereum wallet address not provided"}, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        print("Fetching balance for wallet:", wallet_address)
+        response = requests.get(f"https://api.etherscan.io/api?module=account&action=balance&address={wallet_address}&tag=latest&apikey={settings.ETHERSCAN_API_KEY}")
+        response.raise_for_status()
+        data = response.json()
+        print("Etherscan API response:", data)
+        balance = data.get('result', 0)
+        return response.Response({"balance": balance})
+    except requests.RequestException as e:
+        print("Error fetching balance:", str(e))
+        return response.Response({"error": "Failed to fetch Ethereum balance"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
