@@ -91,7 +91,7 @@ DATABASES = {
     }
 }
 
-
+ETHERSCAN_API_KEY='PD365KJ9IP4FMATNFG52XM6AM37F1NDTG9'
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
 
