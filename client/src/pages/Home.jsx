@@ -14,9 +14,14 @@ export default function Home() {
         <div className='container mt-3'>
             <h2>
                 <div className='row'>
-                    <div className="mb-12">
+                    <div className="mb-12 col-6">
                         {user?.email !== undefined ? 'List user Ethereum balance' : 'Please login first'}
                     </div>
+                    {user?.email !== undefined && (
+                        <div className="mb-12 col-6">
+                            {user.balance}
+                        </div>
+                    )}
                 </div>
             </h2>
         </div>

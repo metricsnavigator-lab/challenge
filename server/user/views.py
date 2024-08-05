@@ -4,6 +4,7 @@ from django.middleware import csrf
 from rest_framework import exceptions as rest_exceptions, response, decorators as rest_decorators, permissions as rest_permissions
 from rest_framework_simplejwt import tokens, views as jwt_views, serializers as jwt_serializers, exceptions as jwt_exceptions
 from user import serializers, models
+from user.wallet import get_balance
 
 
 def get_user_tokens(user):
@@ -127,4 +128,7 @@ def user(request):
         return response.Response(status_code=404)
 
     serializer = serializers.UserSerializer(user)
-    return response.Response(serializer.data)
+    data = (serializer.data)
+    data['balance'] = str(get_balance(data['wallet_address'])) + ' Ether'
+    print(data)
+    return response.Response(data)
